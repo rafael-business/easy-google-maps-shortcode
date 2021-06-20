@@ -69,3 +69,5 @@ add_action( 'wp_footer', function() {
 	<script src="<?php echo plugin_dir_url(__FILE__); ?>assets/js/map.js" type="text/javascript"></script>
 	<?php
 });
+
+require_once 'admin/egms-admin-pages.php';
