@@ -65,7 +65,7 @@ add_shortcode( 'easy-google-maps', function($atts) {
 add_action( 'wp_footer', function() {
 
 	?>
-	<script src="https://maps.google.com/maps/api/js?key=AIzaSyAVKJ9VnqGmMjelgrjgBEVuIvEDwzNS2cI" type="text/javascript"></script>
+	<script src="https://maps.google.com/maps/api/js?key=[chave_api_google_maps]" type="text/javascript"></script>
 	<script src="<?php echo plugin_dir_url(__FILE__); ?>assets/js/map.js" type="text/javascript"></script>
 	<?php
 });
