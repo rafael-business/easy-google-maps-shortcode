@@ -8,100 +8,64 @@ Author: Rafael Business
 Author URI: https://rafael.business
 */
 
-if ( ! defined( 'WPINC' ) ) {
+if (!defined( 'WPINC' )) {
 	die;
 }
 
-/**
- * Loads the plugin textdomain
- *
- * @access      private
- * @since       1.2
- * @return      void
-*/
-function egms_map_textdomain() {
 
-	// Set filter for plugin's languages directory
-	$lang_dir = dirname( plugin_basename( __FILE__ ) ) . '/languages/';
-	$lang_dir = apply_filters( 'egms_map_languages_directory', $lang_dir );
+add_action( 'init', function() {
 
-	// Load the translations
-	load_plugin_textdomain( 'egms', false, $lang_dir );
-}
-
-add_action( 'init', 'egms_map_textdomain' );
+	$lang_dir = dirname(plugin_basename(__FILE__)) . '/languages/';
+	$lang_dir = apply_filters('egms_map_languages_directory', $lang_dir);
+	load_plugin_textdomain('egms', false, $lang_dir);
+});
 
 
-/**
- * Displays the map
- *
- * @access      private
- * @since       1.0
- * @return      void
-*/
-function egms_shortcode( $atts ) {
+add_action( 'wp_head', function() {
 
-	$atts = shortcode_atts(
-		array(
-			'lat'           	=> 0,
-			'lng'				=> 0,
-			'key'               => '',
-			'width'             => '100%',
-			'height'            => '400px',
-			'enablescrollwheel' => 'true',
-			'zoom'              => 15,
-			'disablecontrols'   => 'false',
-			'title'				=> '',
-			'icon'				=> '',
-			'link'				=> ''
-		),
-		$atts
+    $metas = array(
+    	'map_id'			=> uniqid( 'egms_map_' ),
+		'lat'           	=> 0,
+		'lng'				=> 0,
+		'key'               => '',
+		'enablescrollwheel' => 'true',
+		'zoom'              => 15,
+		'disablecontrols'   => 'false',
+		'title'				=> '',
+		'icon'				=> '',
+		'link'				=> ''
 	);
 
-	$lat = $atts['lat'];
-	$lng = $atts['lng'];
-	$key = $atts['key'];
-	$title = $atts['title'];
-	$icon = $atts['icon'];
-	$link = $atts['link'];
+	foreach ($metas as $name => $content) {
+		
+		?>
+	    <meta plugin="egms_map" name="<?php echo $name; ?>" content="<?php echo $content; ?>">
+	    <?php	
+	}
+});
 
-	if( $lat && $lng && $key ) : 
 
-		$map_id = uniqid( 'egms_map_' ); // generate a unique ID for this map
+add_shortcode( 'easy-google-maps', function($atts) {
+
+	$prop = shortcode_atts(array('id' => ''), $atts);
+
+	if ($prop['id']) {
 
 		ob_start(); ?>
 		
-        <script src="https://maps.google.com/maps/api/js?key=<?php echo sanitize_text_field( $key ); ?>" type="text/javascript"></script>
-		<div class="egms_map_canvas" id="<?php echo esc_attr( $map_id ); ?>" style="height: <?php echo esc_attr( $atts['height'] ); ?>; width: <?php echo esc_attr( $atts['width'] ); ?>"></div>
-		<script type="text/javascript">
-			var map_<?php echo $map_id; ?>;
-			function egms_run_map_<?php echo $map_id ; ?>(){
-				var location = new google.maps.LatLng("<?php echo $lat; ?>", "<?php echo $lng; ?>");
-				var map_options = {
-					zoom: <?php echo $atts['zoom']; ?>,
-					center: location,
-					scrollwheel: <?php echo 'true' === strtolower( $atts['enablescrollwheel'] ) ? '1' : '0'; ?>,
-					disableDefaultUI: <?php echo 'true' === strtolower( $atts['disablecontrols'] ) ? '1' : '0'; ?>,
-					mapTypeId: google.maps.MapTypeId.ROADMAP
-				}
-				map_<?php echo $map_id ; ?> = new google.maps.Map(document.getElementById("<?php echo $map_id ; ?>"), map_options);
-				var marker = new google.maps.Marker({
-				position: location,
-				map: map_<?php echo $map_id ; ?>,
-				icon: "<?php echo $icon; ?>",
-				title: "<?php echo $title; ?>",
-				});
-				marker.addListener("click", () => {
-					window.open('<?php echo $link; ?>', '_blank');
-				});
-			}
-			egms_run_map_<?php echo $map_id ; ?>();
-		</script>
+		<div class="egms_map" style="height: 400px;"></div>
 		<?php
 		return ob_get_clean();
-	else :
-		return __( 'This Google Map cannot be loaded because the maps API does not appear to be loaded', 'egms' );
-	endif;
-}
+	} else {
 
-add_shortcode( 'easy-google-maps', 'egms_shortcode' );
+		return __( 'This Google Map cannot be loaded because the maps API does not appear to be loaded', 'egms' );
+	}
+});
+
+add_action( 'wp_footer', function() {
+
+	?>
+	<script src="https://maps.google.com/maps/api/js?key=AIzaSyAVKJ9VnqGmMjelgrjgBEVuIvEDwzNS2cI" type="text/javascript"></script>
+	<script src="<?php echo plugin_dir_url(__FILE__); ?>assets/js/map.js" type="text/javascript"></script>
+	<?php
+});
